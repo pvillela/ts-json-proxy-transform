@@ -4,9 +4,9 @@
     the target service and/or the response after it returns from the target service.
  */
 
-import axios, { AxiosRequestHeaders, AxiosResponseHeaders } from "axios";
+import axios, { AxiosRequestHeaders } from "axios";
 import express, { Request, Response } from "express";
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
+import { IncomingHttpHeaders } from "http";
 
 export type ReqTransformIn = {
   path: string;
@@ -81,17 +81,17 @@ export function proxy(
     };
     const reqTransformOut = reqTransform ? reqTransform(reqTransformIn) : reqTransformIn;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const data = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
-    const headers = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
+    const reqData = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
+    const reqHeaders = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
     const url = new URL(baseSvcUrl);
-    headers["host"] = url.host;
+    reqHeaders.host = url.host;
 
     axios({
       method,
       url: baseSvcUrl + path,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      data,
-      headers: headers as AxiosRequestHeaders
+      data: reqData,
+      headers: reqHeaders as AxiosRequestHeaders
     })
       .then((resS) => {
         // eslint-disable-next-line no-param-reassign
@@ -106,16 +106,16 @@ export function proxy(
           headers: resS.headers
         };
         const resTransformOut = resTransform ? resTransform(resTransformIn) : resTransformIn;
-        const data = resTransformOut.data ? resTransformOut.data : resTransformIn.data;
-        const headers = resTransformOut.headers ? resTransformOut.headers : resTransformIn.headers;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const resData = resTransformOut.data ? resTransformOut.data : resTransformIn.data;
+        const resHeaders = resTransformOut.headers ? resTransformOut.headers : resTransformIn.headers;
 
-        if (headers) {
-          for (const k in headers) {
-            resP.setHeader(k, headers[k]);
-          }
+        // eslint-disable-next-line promise/always-return
+        for (const k in resHeaders) {
+          resP.setHeader(k, resHeaders[k]);
         }
 
-        resP.send(data);
+        resP.send(resData);
       })
       .catch((error) => {
         resP.status(500);
