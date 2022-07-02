@@ -4,8 +4,31 @@
     the target service and/or the response after it returns from the target service.
  */
 
-import axios, { AxiosRequestHeaders } from "axios";
+import axios, { AxiosRequestHeaders, AxiosResponseHeaders } from "axios";
 import express, { Request, Response } from "express";
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
+
+export type ReqTransformIn = {
+  path: string;
+  data: unknown;
+  headers: IncomingHttpHeaders;
+};
+
+export type ReqTransformOut = {
+  data?: unknown;
+  headers?: IncomingHttpHeaders;
+};
+
+export type ResTransformIn = {
+  path: string;
+  data: unknown;
+  headers: Record<string, string> & {"set-cookie"?: string[]};
+};
+
+export type ResTransformOut = {
+  data?: unknown;
+  headers?: Record<string, string> & {"set-cookie"?: string[]};
+};
 
 /**
  * Implements the proxy server.
@@ -18,8 +41,8 @@ export function proxy(
   prxPort: number,
   baseSvcUrl: string,
   options?: {
-    reqTransform?: (body: unknown) => unknown;
-    resTransform?: (data: unknown) => unknown;
+    reqTransform?: (input: ReqTransformIn) => ReqTransformOut;
+    resTransform?: (input: ResTransformIn) => ResTransformOut;
   }
 ): void {
   const reqTransform = options?.reqTransform;
@@ -50,13 +73,23 @@ export function proxy(
 
     const path = reqP.path;
 
+    const reqTransformIn = {
+      path: reqP.path,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: reqP.body,
+      headers: reqP.headers
+    };
+    const reqTransformOut = reqTransform ? reqTransform(reqTransformIn) : reqTransformIn;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const reqBodyT = reqTransform ? reqTransform(reqP.body) : reqP.body;
+    const data = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
+    const headers = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
 
     axios({
       method,
       url: baseSvcUrl + path,
-      data: reqBodyT
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data,
+      headers: headers as AxiosRequestHeaders
     })
       .then((resS) => {
         // eslint-disable-next-line no-param-reassign
@@ -64,10 +97,24 @@ export function proxy(
 
         resP.status(resS.status);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,promise/always-return
-        const resDataT = resTransform ? resTransform(resS.data) : resS.data;
 
-        resP.send(resDataT);
+        const resTransformIn = {
+          path: reqP.path,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data: resS.data,
+          headers: resS.headers
+        };
+        const resTransformOut = resTransform ? resTransform(resTransformIn) : resTransformIn;
+        const data = resTransformOut.data ? resTransformOut.data : resTransformIn.data;
+        const headers = resTransformOut.headers ? resTransformOut.headers : resTransformIn.headers;
+
+        if (headers) {
+          for (const k in headers) {
+            resP.setHeader(k, headers[k]);
+          }
+        }
+
+        resP.send(data);
       })
       .catch((error) => {
         resP.status(500);
@@ -92,7 +139,7 @@ export function proxyOld(
   const reqTransform = options?.reqTransform;
   const resTransform = options?.resTransform;
 
-  const app = express();
+  const app = express()
 
   // Enable Express JSON middleware.
   app.use(
