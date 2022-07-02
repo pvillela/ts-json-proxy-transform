@@ -19,11 +19,10 @@ function reqTransform(input: ReqTransformIn): ReqTransformOut {
     const trfmReqBody = { ...origReqBody };
     trfmReqBody.message = (origReqBody.message as string) + " - by proxy";
     console.log("********* trfmReqBody:", JSON.stringify(trfmReqBody));
-    const headers = input.headers;
-    // delete headers["content-length"];
-    headers["content-length"] = JSON.stringify(trfmReqBody).length.toString();
-    console.log("********* headers:", headers);
-    return { data: trfmReqBody, headers };
+    const reqHeaders = input.headers;
+    console.log("********* reqHeaders:", reqHeaders);
+    // Notice below headers are not returned so input headers will be used.
+    return { data: trfmReqBody };
   }
   throw new Error("Unable to transform request.");
 }
@@ -39,11 +38,12 @@ function resTransform(input: ResTransformIn): ResTransformOut {
     const trfmResData = { ...origResData };
     trfmResData.data = result;
     console.log("********* trfmResData:", trfmResData);
-    const headers = input.headers;
-    // delete headers["content-length"];
-    headers["content-length"] = JSON.stringify(trfmResData).length.toString();
-    console.log("********* headers:", headers);
-    return { data: trfmResData, headers };
+    const resHeaders = input.headers;
+    // Set a custom header.
+    resHeaders.foo = "bar";
+    console.log("********* resHeaders:", resHeaders);
+    console.log("********* Manual computation of content-length header value:", JSON.stringify(trfmResData).length);
+    return { data: trfmResData, headers: resHeaders };
   }
   throw new Error("Unable to transform response.");
 }

@@ -1,6 +1,8 @@
 # ts-proxy-transform
 
-This library implements a simple TypeScript proxy server function based on Express and Axios. The proxy server supports optional transformations of the request before it goes to the target service and/or the response after it returns from the target service.
+This library implements a simple proxy server for JSON HTTP APIs that can transform the request before it goes to the target service and/or the response after it returns from the target service. It is written in TypeScript and is based on Express and Axios.
+
+This proxy is suitable for test environments and test use cases, but is not recommended for production use.
 
 The [src/proxy-run-example.ts](./src/proxy-run-example.ts) file contains an example that proxies the [Postman echo service](https://www.postman.com/postman/workspace/published-postman-templates/documentation/631643-f695cab7-6878-eb55-7943-ad88e1ccfd65?ctx=documentation) (see below) with request and response transformations. The examples in the `examples-data` directory (see below) can be used to call the proxy service. The Postman collection example files require the Postman app and the curl examples can be used without Postman.
 

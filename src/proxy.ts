@@ -8,23 +8,36 @@ import axios, { AxiosRequestHeaders } from "axios";
 import express, { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 
+/**
+ * Data type of input to request transformation function.
+ */
 export type ReqTransformIn = {
   path: string;
   data: unknown;
   headers: IncomingHttpHeaders;
 };
 
+/**
+ * Data type of output of request transformation function.
+ */
 export type ReqTransformOut = {
   data?: unknown;
   headers?: IncomingHttpHeaders;
 };
 
+/**
+ * Data type of input to response transformation function.
+ */
 export type ResTransformIn = {
   path: string;
   data: unknown;
   headers: Record<string, string> & {"set-cookie"?: string[]};
 };
 
+
+/**
+ * Data type of output of response transformation function.
+ */
 export type ResTransformOut = {
   data?: unknown;
   headers?: Record<string, string> & {"set-cookie"?: string[]};
@@ -36,6 +49,10 @@ export type ResTransformOut = {
  * @param prxPort The port on which the proxy listens.
  * @param baseSvcUrl The URL of the target service that is being proxied.
  * @param options Optional functions to transform the request body and/or response data.
+ *  The transform functions do not need to set the headers for content-type, host, and
+ *  content-length as they are set automatically. If the `headers` field of a transform
+ *  function response is undefined then the original untransformed headers are used, with
+ *  the appropriate automatic setting of the host and content-length headers.
  */
 export function proxy(
   prxPort: number,
@@ -83,8 +100,10 @@ export function proxy(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const reqData = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
     const reqHeaders = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
-    const url = new URL(baseSvcUrl);
-    reqHeaders.host = url.host;
+
+    // Let Axios generate appropriate host and content-length headers.
+    delete reqHeaders.host;
+    delete reqHeaders["content-length"];
 
     axios({
       method,
@@ -109,6 +128,9 @@ export function proxy(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const resData = resTransformOut.data ? resTransformOut.data : resTransformIn.data;
         const resHeaders = resTransformOut.headers ? resTransformOut.headers : resTransformIn.headers;
+
+        // Let Express generate appropriate content-length header.
+        delete resHeaders["content-length"];
 
         // eslint-disable-next-line promise/always-return
         for (const k in resHeaders) {
