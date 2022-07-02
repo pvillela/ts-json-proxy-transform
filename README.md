@@ -1,4 +1,4 @@
-# ts-proxy-transform
+# ts-json-proxy-transform
 
 This library implements a simple proxy server for JSON HTTP APIs that can transform the request before it goes to the target service and/or the response after it returns from the target service. It is written in TypeScript and is based on Express and Axios.
 
