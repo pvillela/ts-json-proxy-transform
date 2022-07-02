@@ -83,6 +83,8 @@ export function proxy(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
     const headers = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
+    const url = new URL(baseSvcUrl);
+    headers["host"] = url.host;
 
     axios({
       method,
@@ -96,7 +98,6 @@ export function proxy(
         resP.charset = "utf8";
 
         resP.status(resS.status);
-
 
         const resTransformIn = {
           path: reqP.path,
@@ -115,62 +116,6 @@ export function proxy(
         }
 
         resP.send(data);
-      })
-      .catch((error) => {
-        resP.status(500);
-        resP.send(error);
-        console.error("ERROR:", error);
-      });
-  });
-
-  app.listen(prxPort, () => {
-    console.log(`Application is running on port ${prxPort}`);
-  });
-}
-
-export function proxyOld(
-  prxPort: number,
-  svcUrl: string,
-  options?: {
-    reqTransform?: (body: unknown) => unknown;
-    resTransform?: (data: unknown) => unknown;
-  }
-): void {
-  const reqTransform = options?.reqTransform;
-  const resTransform = options?.resTransform;
-
-  const app = express()
-
-  // Enable Express JSON middleware.
-  app.use(
-    express.json({
-      verify: (req: Request, res: Response, buf: Buffer) => {
-        try {
-          JSON.parse(buf.toString());
-        } catch (e) {
-          res.status(400);
-          res.send("invalidJsonError");
-          throw Error("Invalid JSON");
-        }
-      },
-    })
-  );
-
-  app.all("/", (reqP, resP) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const reqBodyT = reqTransform ? reqTransform(reqP.body) : reqP.body;
-    axios
-      .post(svcUrl, reqBodyT)
-      .then((resS) => {
-        // eslint-disable-next-line no-param-reassign
-        resP.charset = "utf8";
-
-        resP.status(resS.status);
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,promise/always-return
-        const resDataT = resTransform ? resTransform(resS.data) : resS.data;
-
-        resP.send(resDataT);
       })
       .catch((error) => {
         resP.status(500);

@@ -50,6 +50,6 @@ function resTransform(input: ResTransformIn): ResTransformOut {
 
 proxy(
   8000,
-  "http://postman-echo.com",
+  "https://postman-echo.com",
   { reqTransform, resTransform }
 );
