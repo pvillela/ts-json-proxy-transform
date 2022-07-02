@@ -42,6 +42,6 @@ function resTransform(data: unknown): unknown {
 
 proxy(
   8000,
-  "https://postman-echo.com/post",
+  "https://postman-echo.com",
   { reqTransform, resTransform }
 );

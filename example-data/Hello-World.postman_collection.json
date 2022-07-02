@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "938d4a35-e18b-4eb8-b623-343f0fc1bebe",
-		"name": "Hello World",
+		"name": "Hello-World",
 		"description": "A simple collection with one request that has tests to validate response. You can use this collection as a entry-levle example to demonstrate Postman's debugging capabilities.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21641935"
