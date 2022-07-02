@@ -13,13 +13,17 @@ import { proxy, ReqTransformIn, ReqTransformOut, ResTransformIn, ResTransformOut
 
 function reqTransform(input: ReqTransformIn): ReqTransformOut {
   const origReqBody = input.data as any;
-  console.log("********* origReqBody:", origReqBody);
+  console.log("********* origReqBody:", JSON.stringify(origReqBody));
   const msg = origReqBody.message;
   if (msg) {
     const trfmReqBody = { ...origReqBody };
     trfmReqBody.message = (origReqBody.message as string) + " - by proxy";
-    console.log("********* trfmReqBody:", trfmReqBody);
-    return { data: trfmReqBody };
+    console.log("********* trfmReqBody:", JSON.stringify(trfmReqBody));
+    const headers = input.headers;
+    // delete headers["content-length"];
+    headers["content-length"] = JSON.stringify(trfmReqBody).length.toString();
+    console.log("********* headers:", headers);
+    return { data: trfmReqBody, headers };
   }
   throw new Error("Unable to transform request.");
 }
@@ -35,7 +39,11 @@ function resTransform(input: ResTransformIn): ResTransformOut {
     const trfmResData = { ...origResData };
     trfmResData.data = result;
     console.log("********* trfmResData:", trfmResData);
-    return { data: trfmResData };
+    const headers = input.headers;
+    // delete headers["content-length"];
+    headers["content-length"] = JSON.stringify(trfmResData).length.toString();
+    console.log("********* headers:", headers);
+    return { data: trfmResData, headers };
   }
   throw new Error("Unable to transform response.");
 }
