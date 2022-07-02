@@ -12,8 +12,20 @@ import { IncomingHttpHeaders } from "http";
  * Data type of input to request transformation function.
  */
 export type ReqTransformIn = {
+  /**
+   * Enables the transformation function to have differentiated logic depending on the
+   * endpoint's path.
+   */
   path: string;
+
+  /**
+   * The object payload of the original request.
+   */
   data: unknown;
+
+  /**
+   * The headers of the original request.
+   */
   headers: IncomingHttpHeaders;
 };
 
@@ -21,7 +33,14 @@ export type ReqTransformIn = {
  * Data type of output of request transformation function.
  */
 export type ReqTransformOut = {
+  /**
+   * The transformed object payload.
+   */
   data?: unknown;
+
+  /**
+   * The transformed headers.
+   */
   headers?: IncomingHttpHeaders;
 };
 
@@ -29,8 +48,20 @@ export type ReqTransformOut = {
  * Data type of input to response transformation function.
  */
 export type ResTransformIn = {
+  /**
+   * Enables the transformation function to have differentiated logic depending on the
+   * endpoint's path.
+   */
   path: string;
+
+  /**
+   * The object content of the target service's response.
+   */
   data: unknown;
+
+  /**
+   * The headers of the target service's response.
+   */
   headers: Record<string, string> & {"set-cookie"?: string[]};
 };
 
@@ -39,7 +70,14 @@ export type ResTransformIn = {
  * Data type of output of response transformation function.
  */
 export type ResTransformOut = {
+  /**
+   * The transformed response object.
+   */
   data?: unknown;
+
+  /**
+   * The transformed headers.
+   */
   headers?: Record<string, string> & {"set-cookie"?: string[]};
 };
 
