@@ -6,7 +6,7 @@
 
 import axios, { AxiosRequestHeaders } from "axios";
 import express, { Request, Response } from "express";
-import { IncomingHttpHeaders } from "http";
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
 
 /**
  * Data type of input to request transformation function.
@@ -62,7 +62,7 @@ export type ResTransformIn = {
   /**
    * The headers of the target service's response.
    */
-  headers: Record<string, string> & {"set-cookie"?: string[]};
+  headers: OutgoingHttpHeaders;
 };
 
 
@@ -78,7 +78,7 @@ export type ResTransformOut = {
   /**
    * The transformed headers.
    */
-  headers?: Record<string, string> & {"set-cookie"?: string[]};
+  headers?: OutgoingHttpHeaders;
 };
 
 /**
@@ -172,7 +172,10 @@ export function proxy(
 
         // eslint-disable-next-line promise/always-return
         for (const k in resHeaders) {
-          resP.setHeader(k, resHeaders[k]);
+          const header = resHeaders[k];
+          if (header) {
+            resP.setHeader(k, header);
+          }
         }
 
         resP.send(resData);
