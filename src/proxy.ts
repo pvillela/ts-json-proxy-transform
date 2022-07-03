@@ -6,80 +6,7 @@
 
 import axios, { AxiosRequestHeaders } from "axios";
 import express, { Request, Response } from "express";
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
-
-/**
- * Data type of input to request transformation function.
- */
-export type ReqTransformIn = {
-  /**
-   * Enables the transformation function to have differentiated logic depending on the
-   * endpoint's path.
-   */
-  path: string;
-
-  /**
-   * The object payload of the original request.
-   */
-  data: unknown;
-
-  /**
-   * The headers of the original request.
-   */
-  headers: IncomingHttpHeaders;
-};
-
-/**
- * Data type of output of request transformation function.
- */
-export type ReqTransformOut = {
-  /**
-   * The transformed object payload.
-   */
-  data?: unknown;
-
-  /**
-   * The transformed headers.
-   */
-  headers?: IncomingHttpHeaders;
-};
-
-/**
- * Data type of input to response transformation function.
- */
-export type ResTransformIn = {
-  /**
-   * Enables the transformation function to have differentiated logic depending on the
-   * endpoint's path.
-   */
-  path: string;
-
-  /**
-   * The object content of the target service's response.
-   */
-  data: unknown;
-
-  /**
-   * The headers of the target service's response.
-   */
-  headers: OutgoingHttpHeaders;
-};
-
-
-/**
- * Data type of output of response transformation function.
- */
-export type ResTransformOut = {
-  /**
-   * The transformed response object.
-   */
-  data?: unknown;
-
-  /**
-   * The transformed headers.
-   */
-  headers?: OutgoingHttpHeaders;
-};
+import { IncomingHttpHeaders } from "http";
 
 /**
  * Implements the proxy server.
@@ -96,8 +23,8 @@ export function proxy(
   prxPort: number,
   baseSvcUrl: string,
   options?: {
-    reqTransform?: (input: ReqTransformIn) => ReqTransformOut;
-    resTransform?: (input: ResTransformIn) => ResTransformOut;
+    reqTransform?: (path: string, data: unknown, headers: IncomingHttpHeaders) => unknown;
+    resTransform?: (path: string, data: unknown) => unknown;
   }
 ): void {
   const reqTransform = options?.reqTransform;
@@ -128,16 +55,30 @@ export function proxy(
 
     const path = reqP.path;
 
-    const reqTransformIn = {
-      path: reqP.path,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      data: reqP.body,
-      headers: reqP.headers
-    };
-    const reqTransformOut = reqTransform ? reqTransform(reqTransformIn) : reqTransformIn;
+    const transformRequest =
+      reqTransform
+      && ((data: unknown, axiosHeaders?: AxiosRequestHeaders): string => {
+        if (!axiosHeaders) throw new Error("No headers.");
+        // Convert to IncomingHeaders type.
+        for (const key in axiosHeaders) {
+          if (typeof axiosHeaders[key] !== "string") {
+            axiosHeaders[key] = axiosHeaders[key].toString();
+          }
+        }
+        const result = reqTransform(path, data, axiosHeaders as IncomingHttpHeaders);
+        return JSON.stringify(result);
+      });
+
+    const transformResponse =
+      resTransform
+      && ((data: unknown): unknown => {
+        const result = resTransform(path, data);
+        return JSON.stringify(result);
+      });
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const reqData = reqTransformOut.data ? reqTransformOut.data : reqTransformIn.data;
-    const reqHeaders = reqTransformOut.headers ? reqTransformOut.headers : reqTransformIn.headers;
+    const reqData = reqP.body;
+    const reqHeaders = reqP.headers;
 
     // Let Axios generate appropriate host and content-length headers.
     delete reqHeaders.host;
@@ -148,27 +89,22 @@ export function proxy(
       url: baseSvcUrl + path,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: reqData,
-      headers: reqHeaders as AxiosRequestHeaders
+      headers: reqHeaders as AxiosRequestHeaders,
+      transformRequest,
+      transformResponse
     })
       .then((resS) => {
         // eslint-disable-next-line no-param-reassign
-        resP.charset = "utf8";
+        // resP.charset = "utf8";
 
         resP.status(resS.status);
 
-        const resTransformIn = {
-          path: reqP.path,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          data: resS.data,
-          headers: resS.headers
-        };
-        const resTransformOut = resTransform ? resTransform(resTransformIn) : resTransformIn;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const resData = resTransformOut.data ? resTransformOut.data : resTransformIn.data;
-        const resHeaders = resTransformOut.headers ? resTransformOut.headers : resTransformIn.headers;
+        const resData = resS.data;
+        const resHeaders = resS.headers;
 
         // Let Express generate appropriate content-length header.
-        delete resHeaders["content-length"];
+        // delete resHeaders["content-length"];
 
         // eslint-disable-next-line promise/always-return
         for (const k in resHeaders) {
