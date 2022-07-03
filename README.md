@@ -1,6 +1,6 @@
 # json-proxy-transform
 
-This library implements a simple proxy server for JSON HTTP APIs that can transform the request before it goes to the target service and/or the response after it returns from the target service. It is written in TypeScript and is based on Express and Axios.
+This library implements a simple proxy server for JSON HTTP APIs that can transform the request before it goes to the target service and/or the response after it returns from the target service. It is written in TypeScript and is based on [Express](https://www.npmjs.com/package/express) and [Axios](https://www.npmjs.com/package/axios).
 
 This proxy is suitable for test environments and test use cases, but is not recommended for production use.
 
@@ -12,3 +12,7 @@ The [example-data](./example-data) directory contains:
 - `Hello-Proxy-Put.postman_collection.json` -- same as the above, but to illustrate PUT requests instead of POSTs.
 - `hello-proxy-post-curl.sh` -- curl script with same POST request as `Hello-Proxy-Post.postman_collection.json`.
 - `hello-proxy-put-curl.sh` -- same as the above, but to illustrate PUT requests instead of POSTs.
+
+### Implementation note
+
+While Axios directly provides the ability to transform requests and responses, I chose, after much exploration, not to use that feature as it adds much unnecessary complexity to the implementation of this library. The main problem is that much of the default Axios behaviour goes away when `transformRequest` and `transformResponse` are used, so it is necessary make calls to JSON.stringify, parse JSON data, set several headers, etc. In addition, the Axios `transformRequest` function uses the `AxiosRequestHeaders` type which is different from the standard `IncomingHttpHeaders` type. To avoid introducing an API dependency on `AxiosRequestHeaders`, it would be necessary for the implementation to iterate over the latter to make it compatible with `IncomingHttpHeaders`.

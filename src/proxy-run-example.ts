@@ -20,9 +20,10 @@ function reqTransform(input: ReqTransformIn): ReqTransformOut {
     trfmReqBody.message = (origReqBody.message as string) + " - by proxy";
     console.log("********* trfmReqBody:", JSON.stringify(trfmReqBody));
     const reqHeaders = input.headers;
+    // Set a custom header.
+    reqHeaders.foo = "bar";
     console.log("********* reqHeaders:", reqHeaders);
-    // Notice below headers are not returned so input headers will be used.
-    return { data: trfmReqBody };
+    return { data: trfmReqBody, headers: reqHeaders };
   }
   throw new Error("Unable to transform request.");
 }
@@ -39,11 +40,10 @@ function resTransform(input: ResTransformIn): ResTransformOut {
     trfmResData.data = result;
     console.log("********* trfmResData:", trfmResData);
     const resHeaders = input.headers;
-    // Set a custom header.
-    resHeaders.foo = "bar";
     console.log("********* resHeaders:", resHeaders);
     console.log("********* Manual computation of content-length header value:", JSON.stringify(trfmResData).length);
-    return { data: trfmResData, headers: resHeaders };
+    // Notice below headers are not returned so input headers will be used.
+    return { data: trfmResData };
   }
   throw new Error("Unable to transform response.");
 }
