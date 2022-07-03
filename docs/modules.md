@@ -1,4 +1,4 @@
-[json-proxy-transform](README.md) / Modules
+[json-proxy-transform](../README.md) / Modules
 
 # json-proxy-transform
 
