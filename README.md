@@ -15,7 +15,7 @@ The [example-data](example-data) directory contains:
 
 ## API documentation
 
-See [docs/modules.md](docs/modules.md)
+See [docs/modules.md](docs/modules.md).
 
 
 ### Implementation note
