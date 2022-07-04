@@ -1,6 +1,4 @@
-[json-proxy-transform](../README.md) / Modules
-
-# json-proxy-transform
+# json-proxy-transform API
 
 ## Table of contents
 
@@ -29,11 +27,11 @@ Data type of input to request transformation function.
 | :------ | :------ | :------ |
 | `data` | `unknown` | The object payload of the original request. |
 | `headers` | `IncomingHttpHeaders` | The headers of the original request. |
-| `path` | `string` | Enables the transformation function to have differentiated logic depending on the endpoint's path. |
+| `path` | `string` | The request path. Enables the transformation function to have differentiated logic depending on the endpoint's path. |
 
 #### Defined in
 
-[proxy.ts:14](https://github.com/pvillela/ts-json-proxy-transform/blob/17d9602/src/proxy.ts#L14)
+[proxy.ts:14](https://github.com/pvillela/ts-json-proxy-transform/blob/99c72d1/src/proxy.ts#L14)
 
 ___
 
@@ -52,7 +50,7 @@ Data type of output of request transformation function.
 
 #### Defined in
 
-[proxy.ts:35](https://github.com/pvillela/ts-json-proxy-transform/blob/17d9602/src/proxy.ts#L35)
+[proxy.ts:35](https://github.com/pvillela/ts-json-proxy-transform/blob/99c72d1/src/proxy.ts#L35)
 
 ___
 
@@ -68,11 +66,12 @@ Data type of input to response transformation function.
 | :------ | :------ | :------ |
 | `data` | `unknown` | The object content of the target service's response. |
 | `headers` | `OutgoingHttpHeaders` | The headers of the target service's response. |
-| `path` | `string` | Enables the transformation function to have differentiated logic depending on the endpoint's path. |
+| `path` | `string` | The request path. Enables the transformation function to have differentiated logic depending on the endpoint's path. |
+| `status` | `number` | The response status code. Enables the transformation function to have differentiated logic depending on the response status code. |
 
 #### Defined in
 
-[proxy.ts:50](https://github.com/pvillela/ts-json-proxy-transform/blob/17d9602/src/proxy.ts#L50)
+[proxy.ts:50](https://github.com/pvillela/ts-json-proxy-transform/blob/99c72d1/src/proxy.ts#L50)
 
 ___
 
@@ -91,7 +90,7 @@ Data type of output of response transformation function.
 
 #### Defined in
 
-[proxy.ts:72](https://github.com/pvillela/ts-json-proxy-transform/blob/17d9602/src/proxy.ts#L72)
+[proxy.ts:78](https://github.com/pvillela/ts-json-proxy-transform/blob/99c72d1/src/proxy.ts#L78)
 
 ## Functions
 

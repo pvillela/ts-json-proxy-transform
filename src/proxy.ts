@@ -13,8 +13,8 @@ import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
  */
 export type ReqTransformIn = {
   /**
-   * Enables the transformation function to have differentiated logic depending on the
-   * endpoint's path.
+   * The request path. Enables the transformation function to have differentiated logic
+   * depending on the endpoint's path.
    */
   path: string;
 
@@ -49,10 +49,16 @@ export type ReqTransformOut = {
  */
 export type ResTransformIn = {
   /**
-   * Enables the transformation function to have differentiated logic depending on the
-   * endpoint's path.
+   * The request path. Enables the transformation function to have differentiated logic
+   * depending on the endpoint's path.
    */
   path: string;
+
+  /**
+   * The response status code. Enables the transformation function to have differentiated logic
+   * depending on the response status code.
+   */
+  status: number;
 
   /**
    * The object content of the target service's response.
@@ -158,6 +164,7 @@ export function proxy(
 
         const resTransformIn = {
           path: reqP.path,
+          status: resS.status,
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           data: resS.data,
           headers: resS.headers

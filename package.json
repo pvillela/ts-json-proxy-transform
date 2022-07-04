@@ -1,12 +1,13 @@
 {
   "name": "json-proxy-transform",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple proxy server with ability to transform JSON request and response.",
   "main": "dist/proxy.js",
   "types": "dist/proxy.d.js",
   "scripts": {
-    "example": "ts-node src/proxy-run-example.ts",
-    "prepublish": "tsc --build tsconfig.production.json"
+    "typedoc": "typedoc --entryPoints src/proxy.ts --tsconfig tsconfig.json --plugin typedoc-plugin-markdown --out docs src/index.ts",
+    "prepublish": "tsc --build tsconfig.production.json",
+    "example": "ts-node src/proxy-run-example.ts"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,8 @@
     "prettier": "^2.7.1",
     "ts-node": "^10.8.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "typedoc": "^0.23.5",
+    "typedoc-plugin-markdown": "^3.13.2"
   }
 }

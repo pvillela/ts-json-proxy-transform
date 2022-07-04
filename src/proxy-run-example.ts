@@ -41,6 +41,7 @@ function resTransform(input: ResTransformIn): ResTransformOut {
     console.log("********* trfmResData:", trfmResData);
     const resHeaders = input.headers;
     console.log("********* resHeaders:", resHeaders);
+    console.log("********* Response status:", input.status);
     console.log("********* Manual computation of content-length header value:", JSON.stringify(trfmResData).length);
     // Notice below headers are not returned so input headers will be used.
     return { data: trfmResData };
