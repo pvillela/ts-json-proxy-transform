@@ -5,6 +5,7 @@
   "main": "dist/proxy.js",
   "types": "dist/proxy.d.js",
   "scripts": {
+    "example": "ts-node src/proxy-run-example.ts",
     "prepublish": "tsc --build tsconfig.production.json"
   },
   "repository": {
